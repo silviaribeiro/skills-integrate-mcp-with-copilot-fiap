@@ -14,6 +14,32 @@ from pathlib import Path
 app = FastAPI(title="Mergington High School API",
               description="API for viewing and signing up for extracurricular activities")
 
+# In-memory ideas database
+ideas = []
+@app.get("/ideas")
+def list_ideas():
+    """List all saved ideas"""
+    return {"ideas": ideas}
+
+
+@app.post("/ideas")
+def add_idea(idea: str):
+    """Add a new idea"""
+    if not idea or idea.strip() == "":
+        raise HTTPException(status_code=400, detail="Idea cannot be empty")
+    ideas.append(idea)
+    return {"message": "Idea added", "idea": idea}
+
+
+@app.delete("/ideas")
+def remove_idea(idea: str):
+    """Remove an idea"""
+    try:
+        ideas.remove(idea)
+        return {"message": "Idea removed", "idea": idea}
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Idea not found")
+
 # Mount the static files directory
 current_dir = Path(__file__).parent
 app.mount("/static", StaticFiles(directory=os.path.join(Path(__file__).parent,
